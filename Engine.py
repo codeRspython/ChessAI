@@ -93,7 +93,7 @@ class GameState():
                 endCol = startCol + d[1]*i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
                     endPiece = self.board[endRow][endCol]
-                    if endPiece[0] == allyColor:
+                    if endPiece[0] == allyColor and endPiece[1] != 'K':
                         if possiblePin == ():
                             possiblePin = (endRow, endCol, d[0], d[1])
                         else:
@@ -172,6 +172,14 @@ class GameState():
                     moves.append(Move((r,c), (endRow, endCol), self.board))
 
     def getBishopMoves(self, r, c, moves):
+        piecePinned = False
+        pinDirection = ()
+        for i in range(len(self.pins)-1, -1, -1):
+            if self.pins[i][0] == r and self.pins[i][1] == c:
+                piecePinned = True
+                pinDirection = (self.pins[i][2], self.pins[i][3]
+                self.pins.remove(self.pins[i]))
+                break
         directions = ((-1, -1), (-1, 1), (1, -1), (1, 1))
         enemyColor = 'b' if self.whiteToMove else 'w'
         for d in directions:
@@ -179,14 +187,15 @@ class GameState():
                 endRow = r + d[0]*i
                 endCol = c + d[1]*i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece = self.board[endRow][endCol]
-                    if endPiece == '--':
-                        moves.append(Move((r,c), (endRow, endCol), self.board))
-                    elif endPiece[0] == enemyColor:
-                        moves.append(Move((r,c), (endRow, endCol), self.board))
-                        break
-                    else:
-                        break
+                    if not piecePinned or pinDirection == d or pinDirection == (-d[0], -d[1]):
+                        endPiece = self.board[endRow][endCol]
+                        if endPiece == '--':
+                            moves.append(Move((r,c), (endRow, endCol), self.board))
+                        elif endPiece[0] == enemyColor:
+                            moves.append(Move((r,c), (endRow, endCol), self.board))
+                            break
+                        else:
+                            break
                 else:
                     break
 
