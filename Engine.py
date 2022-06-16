@@ -196,15 +196,23 @@ class GameState():
                         moves.append(Move((r,c), (r+1, c+1), self.board))
 
     def getKnightMoves(self, r, c, moves):
+        piecePinned = False
+        pinDirection = ()
+        for i in range(len(self.pins)-1, -1, -1):
+            if self.pins[i][0] == r and self.pins[i][1] == c:
+                piecePinned = True
+                self.pins.remove(self.pins[i])
+                break
         knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         allyColor = 'w' if self.whiteToMove else 'b'
         for m in knightMoves:
             endRow = r + m[0]
             endCol = c + m[1]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
-                endPiece = self.board[endRow][endCol]
-                if endPiece[0] != allyColor:
-                    moves.append(Move((r,c), (endRow, endCol), self.board))
+                if not piecePinned:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece[0] != allyColor:
+                        moves.append(Move((r,c), (endRow, endCol), self.board))
 
     def getBishopMoves(self, r, c, moves):
         directions = ((-1, -1), (-1, 1), (1, -1), (1, 1))
@@ -259,7 +267,8 @@ class GameState():
         self.getRookMoves(r, c, moves)
 
     def getKingMoves(self, r, c, moves):
-        kingMoves = ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)) # Up, Down, Left, Right + Diagonally
+        rowMoves = (-1, -1, -1, 0, 0, 1, 1, 1)
+        colMoves = (-1, 0, 1, -1, 1, -1, 0, 1) # Up, Down, Left, Right + Diagonally
         allyColor = 'w' if self.whiteToMove else 'b'
         for i in range(8):
             endRow = r + kingMoves[i][0]
@@ -268,6 +277,17 @@ class GameState():
                 endPiece = self.board[endRow][endCol]
                 if endPiece[0] != allyColor:
                     moves.append(Move((r,c), (endRow, endCol), self.board))
+                    if allyColor == 'w':
+                        self.whiteKingLocation = (endRow, endCol)
+                    else:
+                        self.blackKingLocation = (endRow, endCol)
+                    inCheck, checks, pins = self.checkForPinsAndChecks()
+                    if not inCheck:
+                        moves.appen(Move((r,c), (endRow, endCol), self.board))
+                    if allyColor == 'w':
+                        self.whiteKingLocation = (r,c)
+                    else:
+                        self.blackKingLocation = (r,c)
 
 class Move():
     ranksToRows = {'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
