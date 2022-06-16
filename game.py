@@ -1,8 +1,5 @@
 import pygame as p
-import neat
-import time
 import os
-import random
 import Engine
 
 p.init()
