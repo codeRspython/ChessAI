@@ -153,12 +153,12 @@ class GameState():
                         moves.append(Move((r,c), (r-2,c), self.board))
             if c-1 >= 0:
                 if self.board[r-1][c-1][0] == 'b':
-                    if not piecePinned or pinDirection = (-1, -1)
+                    if not piecePinned or pinDirection == (-1, -1):
                         moves.append(Move((r,c), (r-1,c-1), self.board))
             if c+1 <= 7:
                 if self.board[r-1][c+1][0] == 'b':
-                    if not piecePinned or pinDirection = (-1, 1)
-                    moves.append(Move((r,c), (r-1,c+1), self.board))
+                    if not piecePinned or pinDirection == (-1, 1):
+                        moves.append(Move((r,c), (r-1,c+1), self.board))
         else:
             if self.board[r+1][c] == '--':
                 if not piecePinned or pinDirection == (1, 0):
