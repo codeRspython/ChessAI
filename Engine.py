@@ -43,7 +43,7 @@ class GameState():
             self.whiteToMove = not self.whiteToMove
 
     def getValidMoves(self):
-        moves = self.getAllMoves()
+        moves = []
         self.inCheck, self.checks, self.pins = self.checkForPinsAndChecks()
         if self.whiteToMove:
             kingRow = self.whiteKingLocation[0]
@@ -51,9 +51,31 @@ class GameState():
         else: 
             kingRow = self.blackKingLocation[0]
             kingCol = self.blackKingLocation[1]
-        for i in range(len(moves)-1, -1, -1):
-            pass
-        return self.getAllMoves()
+        if self.inCheck:
+            if len(self.checks) == 1: # Making sure, there is only one piece threatening the King
+                moves = self.getAllMoves()
+                check = self.checks[0]
+                checkRow = check[0]
+                checkCol = check[1]
+                pieceChecking = self.board[checkRow][checkCol]
+                validSquares = []
+                if pieceChecking[1] == 'N':
+                    validSquares = [(checkRow, checkCol)]
+                else:
+                    for i in range(1,8):
+                        validSquare = (kingRow + check[2] * i, kingCol + check[3] * i)
+                        validSquares.append(validSquare)
+                        if validSquare[0] == checkRow and validSquare[1] == checkCol:
+                            break
+                for i in range(len(moves)-1, -1, -1):
+                    if moves[i].pieceMoved[1] != 'K':
+                        if not (moves[i].endRow, moves[i].endCol) in validSquares:
+                            moves.remove(moves[i])
+            else:
+                self.getKingMoves(kingRow, kingCol, moves)
+        else:
+            moves = self.getAllMoves()
+        return moves
 
     def inCheck(self):
         if self.whiteToMove:
@@ -259,19 +281,18 @@ class GameState():
         colMoves = (-1, 0, 1, -1, 1, -1, 0, 1) # Up, Down, Left, Right + Diagonally
         allyColor = 'w' if self.whiteToMove else 'b'
         for i in range(8):
-            endRow = r + rowMoves[i][0]
-            endCol = c + colMoves[i][1]
+            endRow = r + rowMoves[i]
+            endCol = c + colMoves[i]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
                 endPiece = self.board[endRow][endCol]
                 if endPiece[0] != allyColor:
-                    moves.append(Move((r,c), (endRow, endCol), self.board))
                     if allyColor == 'w':
                         self.whiteKingLocation = (endRow, endCol)
                     else:
                         self.blackKingLocation = (endRow, endCol)
                     inCheck, checks, pins = self.checkForPinsAndChecks()
                     if not inCheck:
-                        moves.appen(Move((r,c), (endRow, endCol), self.board))
+                        moves.append(Move((r,c), (endRow, endCol), self.board))
                     if allyColor == 'w':
                         self.whiteKingLocation = (r,c)
                     else:
