@@ -177,8 +177,8 @@ class GameState():
         for i in range(len(self.pins)-1, -1, -1):
             if self.pins[i][0] == r and self.pins[i][1] == c:
                 piecePinned = True
-                pinDirection = (self.pins[i][2], self.pins[i][3]
-                self.pins.remove(self.pins[i]))
+                pinDirection = (self.pins[i][2], self.pins[i][3])
+                self.pins.remove(self.pins[i])
                 break
         directions = ((-1, -1), (-1, 1), (1, -1), (1, 1))
         enemyColor = 'b' if self.whiteToMove else 'w'
@@ -223,7 +223,8 @@ class GameState():
         self.getRookMoves(r, c, moves)
 
     def getKingMoves(self, r, c, moves):
-        kingMoves = ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)) # Up, Down, Left, Right + Diagonally
+        rowMoves = (-1, -1, -1, 0, 0, 1, 1, 1)
+        colMoves = (-1, 0, 1, -1, 1, -1, 0, 1) # Up, Down, Left, Right + Diagonally
         allyColor = 'w' if self.whiteToMove else 'b'
         for i in range(8):
             endRow = r + kingMoves[i][0]
@@ -232,6 +233,17 @@ class GameState():
                 endPiece = self.board[endRow][endCol]
                 if endPiece[0] != allyColor:
                     moves.append(Move((r,c), (endRow, endCol), self.board))
+                    if allyColor == 'w':
+                        self.whiteKingLocation = (endRow, endCol)
+                    else:
+                        self.blackKingLocation = (endRow, endCol)
+                    inCheck, checks, pins = self.checkForPinsAndChecks()
+                    if not inCheck:
+                        moves.appen(Move((r,c), (endRow, endCol), self.board))
+                    if allyColor == 'w':
+                        self.whiteKingLocation = (r,c)
+                    else:
+                        self.blackKingLocation = (r,c)
 
 class Move():
     ranksToRows = {'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
