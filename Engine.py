@@ -43,7 +43,7 @@ class GameState():
             self.whiteToMove = not self.whiteToMove
 
     def getValidMoves(self):
-        moves = self.getAllMoves()
+        moves = []
         self.inCheck, self.checks, self.pins = self.checkForPinsAndChecks()
         if self.whiteToMove:
             kingRow = self.whiteKingLocation[0]
@@ -51,8 +51,32 @@ class GameState():
         else: 
             kingRow = self.blackKingLocation[0]
             kingCol = self.blackKingLocation[1]
-        for i in range(len(moves)-1, -1, -1):
-            pass
+        if self.inCheck():
+            if len(self.checks) == 1: # Making sure, there is only one piece threatening the King
+            moves = self.getALlMoves()
+            check = self.checks[0]
+            checkRow = check[0]
+            checkCol = check[1]
+            pieceChecking = self.board[checkRow][checkCol]
+            validSquares = []
+            if pieceChecking[1] == 'N':
+                validSquares = [(checkRow, checkCol)]
+            else:
+                for i in range(1,8):
+                    validSquare = (kingRow + check[2] * i, kingCol + check[3] * i)
+                    validSquares.append(validSquare)
+                    if validSquare[0] == checkRow and validSquare[1] == checkCol:
+                        break
+            for i in range(len(moves)-1, -1, -1):
+                if moves[i].pieceMoved[1] != 'K':
+                    if not (moves[i].endRow, moves[i].endCol) in validSquares:
+                        moves.remove(moves[i])
+        else:
+            self.getKingMoves(kingRow, kingCol, moves)
+    else:
+        moves = self.getAllMoves()
+    return moves
+            
         return self.getAllMoves()
 
     def inCheck(self):
@@ -124,7 +148,6 @@ class GameState():
                     inCheck = True
                     checks.append((endRow, endCol, m[0], m[1]))
         return inCheck, checks, pins
-
 
     def getAllMoves(self):
         moves = []
