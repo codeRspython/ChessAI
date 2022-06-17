@@ -43,25 +43,43 @@ class GameState():
     def getValidMoves(self):
         # Generating all the pseudolegal moves
         moves = self.getAllMoves()
+        directions = ((-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1))
+        knightDirections = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         if self.whiteToMove:
-            allyColor = 'w'
+            startRow = self.whiteKingLocation[0]
+            startCol = self.whiteKingLocation[1]
+            enemyColor = 'b'
+            pawnDirections = [2, 3]
         else:
-            allyColor = 'b'
-        # Iterating backwards through all the pseudolegal moves
-        for i in range(len(moves)-1, -1, -1):
-            # Making the move
-            self.makeMove(moves[i]) # Now it's the other player's move
-            # Therefore we have to get back to our position, in order to check if OUR king is in check
-            self.whiteToMove = not self.whiteToMove
-            # Checking if your king is in check --> if yes: the move is illegal / if no: the move is legal
-            if self.inCheck():
-                moves.remove(moves[i])
-            # Get back to the other persons perspective, in order to not get the turns messed up
-            self.whiteToMove = not self.whiteToMove
-            # Undo the move
+            startRow = self.blackKingLocation[0]
+            startCol = self.blackKingLocation[1]
+            enemyColor = 'w'
+            pawnDirections = [0, 1]
+        for j in range(len(moves)-1, -1, -1):
+            self.makeMove(moves[j])
+            for d in range(len(directions)):
+                for i in range(1,8):
+                    endRow = startRow + directions[d][0] * i
+                    endCol = startCol + directions[d][1] * i
+                    if 0 <= endRow < 8 and 0 <= endCol < 8:
+                        endPiece = self.board[endRow][endCol]
+                        color = endPiece[0]
+                        type = endPiece[1]
+                        if color == enemyColor and type != 'K':
+                            if (0 <= d <= 3 and (type == 'B' or type == 'Q')) or \
+                                (4 <= d <= 7 and (type == 'R' or type == 'Q')) or \
+                                    ((d == pawnDirections[0] or d == pawnDirections[1]) and i == 1 and type == 'p'):
+                                    moves.remove(moves[j])
+            for d in range(len(knightDirections)):
+                endRow = startRow + knightDirections[d][0]
+                endCol = startCol + knightDirections[d][1]
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                        endPiece = self.board[endRow][endCol]
+                        color = endPiece[0]
+                        type = endPiece[1]
+                        if color == enemyColor and type == 'N':
+                            moves.remove(moves[j])
             self.undoMove()
-        if self.inCheck():
-            print(allyColor + 'K is in check')
         print(len(moves))
         return moves
         
@@ -73,7 +91,7 @@ class GameState():
 
     def squareUnderAttack(self, r, c):
         self.whiteToMove = not self.whiteToMove
-        oppMoves = self.getAllMoves()
+        oppMoves = self.getValidMoves()
         self.whiteToMove = not self.whiteToMove
         for move in oppMoves:
             if move.endRow == r and move.endCol == c:
