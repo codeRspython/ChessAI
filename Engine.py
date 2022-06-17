@@ -1,4 +1,7 @@
 import numpy as np
+import sys
+
+sys.setrecursionlimit(1500)
 
 class GameState():
     def __init__(self):
@@ -18,8 +21,6 @@ class GameState():
         self.moveLog = []
         self.whiteKingLocation = (7, 4)
         self.blackKingLocation = (0, 4)
-        self.checkMate = False
-        self.staleMate = False
 
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
@@ -40,33 +41,28 @@ class GameState():
             self.whiteToMove = not self.whiteToMove
 
     def getValidMoves(self):
+        # Generating all the pseudolegal moves
         moves = self.getAllMoves()
-        directions = ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1), (-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         if self.whiteToMove:
-            startRow = self.whiteKingLocation[0]
-            startCol = self.whiteKingLocation[1]
-            enemyColor = 'b'
+            allyColor = 'w'
         else:
-            startRow = self.blackKingLocation[0]
-            startCol = self.blackKingLocation[1]
-            enemyColor = 'w'
+            allyColor = 'b'
+        # Iterating backwards through all the pseudolegal moves
         for i in range(len(moves)-1, -1, -1):
-            self.makeMove(moves[i])
-            for d in directions:
-                for j in range(1,8):
-                    endRow = startRow + d[0] * j
-                    endCol = startCol + d[1] * j
-                    if 0 <= endRow < 8 and 0 <= endCol < 8:
-                        endPiece = self.board[endRow][endCol]
-                        color = endPiece[0]
-                        type = endPiece[1]
-                        if color == enemyColor:
-                            if (0 <= directions.index(d) <= 3 and (type == 'Q' or type == 'R')) or \
-                                (4 <= directions.index(d) <= 7 and (type == 'Q' or type == 'B')) or \
-                                    (8 <= directions.index(d) <= 15 and type == 'N') or \
-                                        (4 <= directions.index(d) <= 7 and j == 1 and type == 'p'):
-                                        moves.remove(moves[i])
+            # Making the move
+            self.makeMove(moves[i]) # Now it's the other player's move
+            # Therefore we have to get back to our position, in order to check if OUR king is in check
+            self.whiteToMove = not self.whiteToMove
+            # Checking if your king is in check --> if yes: the move is illegal / if no: the move is legal
+            if self.inCheck():
+                moves.remove(moves[i])
+            # Get back to the other persons perspective, in order to not get the turns messed up
+            self.whiteToMove = not self.whiteToMove
+            # Undo the move
             self.undoMove()
+        if self.inCheck():
+            print(allyColor + 'K is in check')
+        print(len(moves))
         return moves
         
     def inCheck(self):
@@ -185,12 +181,7 @@ class GameState():
                         self.whiteKingLocation = (endRow, endCol)
                     else:
                         self.blackKingLocation = (endRow, endCol)
-                    if not self.inCheck():
-                        moves.append(Move((r,c), (endRow, endCol), self.board))
-                    if allyColor == 'w':
-                        self.whiteKingLocation = (r,c)
-                    else:
-                        self.blackKingLocation = (r,c)
+                    moves.append(Move((r,c), (endRow, endCol), self.board))
 
 class Move():
     ranksToRows = {'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
