@@ -76,7 +76,7 @@ class GameState():
         else:
             moves = self.getAllMoves()
         return moves
-
+        
     def inCheck(self):
         if self.whiteToMove:
             return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
@@ -146,7 +146,6 @@ class GameState():
                     inCheck = True
                     checks.append((endRow, endCol, m[0], m[1]))
         return inCheck, checks, pins
-
 
     def getAllMoves(self):
         moves = []
