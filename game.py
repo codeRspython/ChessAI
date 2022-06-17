@@ -84,6 +84,5 @@ def main():
         clock.tick(MAX_FPS)
         p.display.flip()
         
-
 if __name__ == '__main__':
     main()

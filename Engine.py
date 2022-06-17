@@ -66,6 +66,7 @@ class GameState():
                                     (8 <= directions.index(d) <= 15 and type == 'N') or \
                                         (4 <= directions.index(d) <= 7 and j == 1 and type == 'p'):
                                         moves.remove(moves[i])
+            self.undoMove()
         return moves
         
     def inCheck(self):
