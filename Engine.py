@@ -57,7 +57,7 @@ class GameState():
 
             if self.inCheck():
                 if len(self.checks) == 1: # Making sure, there is only one piece threatening the King
-                moves = self.getALlMoves()
+                    moves = self.getALlMoves()
 
                 check = self.checks[0]
                 checkRow = check[0]
@@ -185,12 +185,12 @@ class GameState():
                 if self.board[r-1][c+1][0] == 'b':
                     if not piecePinned or pinDirection == (-1, 1):
                         moves.append(Move((r,c), (r-1,c+1), self.board))
-                    if not piecePinned or pinDirection = (-1, -1)
+                    if not piecePinned or pinDirection == (-1, -1):
                         moves.append(Move((r,c), (r-1,c-1), self.board))
             if c+1 <= 7:
                 if self.board[r-1][c+1][0] == 'b':
-                    if not piecePinned or pinDirection = (-1, 1)
-                    moves.append(Move((r,c), (r-1,c+1), self.board))
+                    if not piecePinned or pinDirection == (-1, 1):
+                        moves.append(Move((r,c), (r-1,c+1), self.board))
         else:
             if self.board[r+1][c] == '--':
                 if not piecePinned or pinDirection == (1, 0):
