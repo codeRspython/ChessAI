@@ -69,8 +69,6 @@ def main():
                     move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
                     if move in validMoves:
                         gs.makeMove(move)
-                        if gs.inCheck():
-                            print('check')
                         moveMade = True
                         sqSelected = ()
                         playerClicks = []
