@@ -7,17 +7,17 @@ class GameState():
     def __init__(self):
         self.board = [
             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
-            ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+            ['bp', 'bp', 'bp', 'bp', '--', 'bp', '--', 'bp'],
+            ['--', '--', '--', '--', '--', '--', 'bp', '--'],
+            ['--', '--', '--', '--', 'wQ', '--', '--', '--'],
+            ['--', '--', '--', '--', 'wp', '--', '--', '--'],
             ['--', '--', '--', '--', '--', '--', '--', '--'],
-            ['--', '--', '--', '--', '--', '--', '--', '--'],
-            ['--', '--', '--', '--', '--', '--', '--', '--'],
-            ['--', '--', '--', '--', '--', '--', '--', '--'],
-            ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
+            ['wp', 'wp', 'wp', 'wp', '--', 'wp', 'wp', 'wp'],
+            ['wR', 'wN', 'wB', '--', 'wK', 'wB', 'wN', 'wR']
             ]
 
         self.moveFunctions = {'p': self.getPawnMoves, 'N': self.getKnightMoves, 'B': self.getBishopMoves, 'R': self.getRookMoves, 'Q': self.getQueenMoves, 'K': self.getKingMoves}
-        self.whiteToMove = True
+        self.whiteToMove = False
         self.moveLog = []
         self.whiteKingLocation = (7, 4)
         self.blackKingLocation = (0, 4)
@@ -42,19 +42,22 @@ class GameState():
 
     def getValidMoves(self):
         # Generating all the pseudolegal moves
-        moves = self.getAllMoves()
         directions = ((-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1))
         knightDirections = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         if self.whiteToMove:
             startRow = self.whiteKingLocation[0]
             startCol = self.whiteKingLocation[1]
             enemyColor = 'b'
+            allyColor = 'w'
             pawnDirections = [2, 3]
         else:
             startRow = self.blackKingLocation[0]
             startCol = self.blackKingLocation[1]
             enemyColor = 'w'
+            allyColor = 'b'
             pawnDirections = [0, 1]
+        moves = self.getPseudolegalMoves()
+        validMoves = []
         for j in range(len(moves)-1, -1, -1):
             self.makeMove(moves[j])
             for d in range(len(directions)):
@@ -70,6 +73,13 @@ class GameState():
                                 (4 <= d <= 7 and (type == 'R' or type == 'Q')) or \
                                     ((d == pawnDirections[0] or d == pawnDirections[1]) and i == 1 and type == 'p'):
                                     moves.remove(moves[j])
+                                    break
+                        elif color == allyColor:
+                            break
+                        else:
+                            pass
+                    else:
+                        pass
             for d in range(len(knightDirections)):
                 endRow = startRow + knightDirections[d][0]
                 endCol = startCol + knightDirections[d][1]
@@ -80,8 +90,9 @@ class GameState():
                         if color == enemyColor and type == 'N':
                             moves.remove(moves[j])
             self.undoMove()
-        print(len(moves))
-        return moves
+        validMoves = moves
+        print('Legal moves: ' + str(len(moves)))
+        return validMoves
         
     def inCheck(self):
         if self.whiteToMove:
@@ -98,7 +109,7 @@ class GameState():
                 return True
         return False
 
-    def getAllMoves(self):
+    def getPseudolegalMoves(self):
         moves = []
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
@@ -106,6 +117,7 @@ class GameState():
                 if (turn == 'w' and self.whiteToMove) or (turn == "b" and not self.whiteToMove):
                     piece = self.board[r][c][1]
                     self.moveFunctions[piece](r, c, moves)
+        print('Pseudolegal moves: ' + str(len(moves)))
         return moves
     
     def getPawnMoves(self, r, c, moves):
@@ -186,20 +198,20 @@ class GameState():
         self.getRookMoves(r, c, moves)
 
     def getKingMoves(self, r, c, moves):
-        rowMoves = (-1, -1, -1, 0, 0, 1, 1, 1)
-        colMoves = (-1, 0, 1, -1, 1, -1, 0, 1) # Up, Down, Left, Right + Diagonally
-        allyColor = 'w' if self.whiteToMove else 'b'
-        for i in range(8):
-            endRow = r + rowMoves[i]
-            endCol = c + colMoves[i]
+        directions = ((-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1))
+        enemyColor = 'b' if self.whiteToMove else 'w'
+        for d in directions:
+            endRow = r + d[0]
+            endCol = c + d[1]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
                 endPiece = self.board[endRow][endCol]
-                if endPiece[0] != allyColor:
-                    if allyColor == 'w':
-                        self.whiteKingLocation = (endRow, endCol)
-                    else:
-                        self.blackKingLocation = (endRow, endCol)
+                if endPiece == '--':
                     moves.append(Move((r,c), (endRow, endCol), self.board))
+                    break
+                else:
+                    break
+            else:
+                break
 
 class Move():
     ranksToRows = {'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
