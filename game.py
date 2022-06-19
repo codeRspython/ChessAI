@@ -53,8 +53,6 @@ def main():
         for event in p.event.get():
             if event.type == p.QUIT:
                 run = False
-                p.quit()
-                quit()
             elif event.type == p.MOUSEBUTTONDOWN:
                 loc = p.mouse.get_pos()
                 c = loc[0] // SQ_SIZE
@@ -67,12 +65,13 @@ def main():
                     playerClicks.append(sq_selected)
                 if len(playerClicks) == 2:
                     move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    if move in validMoves:
-                        gs.makeMove(move)
-                        moveMade = True
-                        sqSelected = ()
-                        playerClicks = []
-                    else:
+                    for i in range(len(validMoves)):
+                        if move == validMoves[i]:
+                            gs.makeMove(move)
+                            moveMade = True
+                            sqSelected = ()
+                            playerClicks = []
+                    if not moveMade:
                         playerClicks = [sq_selected]
             elif event.type == p.KEYDOWN:
                 if event.key == p.K_z:
@@ -80,6 +79,9 @@ def main():
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
+            if len(validMoves) == 0:
+                print('Checkmate!')
+                run = False
         drawGameState(win, gs)
         clock.tick(MAX_FPS)
         p.display.flip()

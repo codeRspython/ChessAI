@@ -34,6 +34,10 @@ class GameState():
             self.whiteKingLocation = (move.endRow, move.endCol)
         elif move.pieceMoved == 'bK':
             self.blackKingLocation = (move.endRow, move.endCol)
+        # Pawn Promotion
+        if move.isPawnPromotion:
+            color = 'w' if self.whiteToMove else 'b'
+            self.board[move.endRow][move.endCol] = color + move.promotionChoice
         # Switching turns
         self.whiteToMove = not self.whiteToMove
 
@@ -257,6 +261,10 @@ class Move():
         self.endCol = endSq[1]
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
+        self.isPawnPromotion = False
+        if (self.pieceMoved == 'wp' and self.endRow == 0) or (self.pieceMoved == 'bp' and self.endRow == 7):
+            self.isPawnPromotion = True
+        self.promotionChoice = 'Q'
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
 
     def __eq__(self, other):
