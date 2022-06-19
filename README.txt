@@ -31,16 +31,3 @@ Legal moves for black:
 27th move: bQ (0,3) --> (1,4) = NOT REMOVED SUCCESSFULLY
 28th move: bN (0,1) --> (2,2) = REMOVED SUCCESSFULLY
 29th move: bN (0,1) --> (2,0) = REMOVED SUCCESSFULLY
-30th move:
-31st move:
-32nd move:
-33rd move:
-34th move:
-35th move:
-36th move:
-37th move:
-38th move:
-39th move:
-40th move:
-41st move:
-42nd move:

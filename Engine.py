@@ -1,44 +1,58 @@
 import numpy as np
-import sys
-
-sys.setrecursionlimit(1500)
 
 class GameState():
     def __init__(self):
+        # Initialize the beginning state of a board
         self.board = [
             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
-            ['bp', 'bp', 'bp', 'bp', '--', 'bp', '--', 'bp'],
-            ['--', '--', '--', '--', '--', '--', 'bp', '--'],
-            ['--', '--', '--', '--', 'wQ', '--', '--', '--'],
-            ['--', '--', '--', '--', 'wp', '--', '--', '--'],
+            ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
             ['--', '--', '--', '--', '--', '--', '--', '--'],
-            ['wp', 'wp', 'wp', 'wp', '--', 'wp', 'wp', 'wp'],
-            ['wR', 'wN', 'wB', '--', 'wK', 'wB', 'wN', 'wR']
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
+            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
             ]
 
+        # Initializing a dictionary where the move function of a piece can be accessed by typing the symbol for the piece
         self.moveFunctions = {'p': self.getPawnMoves, 'N': self.getKnightMoves, 'B': self.getBishopMoves, 'R': self.getRookMoves, 'Q': self.getQueenMoves, 'K': self.getKingMoves}
-        self.whiteToMove = False
+        # Initializing whose move it is in the beginning
+        self.whiteToMove = True
         self.moveLog = []
+        # Initializing the location of both kings in order to check for checks
         self.whiteKingLocation = (7, 4)
         self.blackKingLocation = (0, 4)
 
     def makeMove(self, move):
+        # Setting the square of the piece that moved empty
         self.board[move.startRow][move.startCol] = "--"
+        # Moving the piece
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)
-        self.whiteToMove = not self.whiteToMove
         # Update the location of the king
         if move.pieceMoved == 'wK':
             self.whiteKingLocation = (move.endRow, move.endCol)
         elif move.pieceMoved == 'bK':
             self.blackKingLocation = (move.endRow, move.endCol)
+        # Switching turns
+        self.whiteToMove = not self.whiteToMove
+
 
     def undoMove(self):
+        # Checking if there is a move to undo
         if len(self.moveLog) != 0:
+            # Removing the last move
             move = self.moveLog.pop()
+            # Reversing the squares
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
+            # Reversing the turns
             self.whiteToMove = not self.whiteToMove
+            # Updating the Kings' location
+            if move.pieceMoved == 'wK':
+                self.whiteKingLocation = (move.startRow, move.startCol)
+            elif move.pieceMoved == 'bK':
+                self.blackKingLocation = (move.startRow, move.startCol)
 
     def getValidMoves(self):
         # Initializing all the directions a king might get attacked
@@ -107,7 +121,7 @@ class GameState():
         validMoves = moves
         print('Legal moves: ' + str(len(moves)))
         return validMoves
-        
+      
     def inCheck(self):
         if self.whiteToMove:
             return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
@@ -115,10 +129,15 @@ class GameState():
             return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
 
     def squareUnderAttack(self, r, c):
+        # Switching turns in order to generate the opponents' moves
         self.whiteToMove = not self.whiteToMove
+        # Generating the opponents' moves
         oppMoves = self.getValidMoves()
+        # Switching back the turns
         self.whiteToMove = not self.whiteToMove
+        # Iterating through each opponents' move
         for move in oppMoves:
+            # If the endsquare of the move has the given coordinates, the given square is being attacked
             if move.endRow == r and move.endCol == c:
                 return True
         return False
