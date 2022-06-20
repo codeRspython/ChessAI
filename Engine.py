@@ -14,7 +14,7 @@ class GameState():
             ]
 
         self.moveFunctions = {'p': self.getPawnMoves, 'N': self.getKnightMoves, 'B': self.getBishopMoves, 'R': self.getRookMoves, 'Q': self.getQueenMoves, 'K': self.getKingMoves}
-        self.whiteToMove = True
+        self.whiteToMove = False
         self.moveLog = []
         self.whiteKingLocation = (7, 4)
         self.blackKingLocation = (0, 4)
@@ -56,7 +56,7 @@ class GameState():
             # En Passant
             if move.isEnPassant:
                 self.board[move.endRow][move.endCol] = '--'
-                self.board[move.startRow][move.endCol] = move.pieceCaptured
+                self.board[move.startRow][move.endCol] = ('w' if not self.whiteToMove else 'b') + 'p'
                 move.enpassantSquare = (move.endRow, move.endCol)
             if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2:
                 move.enpassantSquare = ()
@@ -75,13 +75,13 @@ class GameState():
                 startCol = self.whiteKingLocation[1]
                 enemyColor = 'b'
                 allyColor = 'w'
-                pawnDirections = [2, 3]
+                pawnDirections = [0, 1]
             else:
                 startRow = self.blackKingLocation[0]
                 startCol = self.blackKingLocation[1]
                 enemyColor = 'w'
                 allyColor = 'b'
-                pawnDirections = [0, 1]
+                pawnDirections = [2, 3]
             for d in range(len(directions)):
                 for i in range(1,8):
                     endRow = startRow + directions[d][0] * i
@@ -94,7 +94,7 @@ class GameState():
                             if (0 <= d <= 3 and (type == 'B' or type == 'Q')) or \
                                 (4 <= d <= 7 and (type == 'R' or type == 'Q')) or \
                                     ((d == pawnDirections[0] or d == pawnDirections[1]) and i == 1 and type == 'p'):
-                                    moves.remove(moves[j])
+                                    moves.remove(moves[j]) 
                                     break
                             else:
                                 break
@@ -149,8 +149,9 @@ class GameState():
         if self.whiteToMove:
             if self.board[r-1][c] == '--':
                 moves.append(Move((r,c), (r-1,c), self.board))
-                if self.board[r-2][c] == '--' and r == 6:
-                    moves.append(Move((r,c), (r-2,c), self.board))
+                if r-2 >= 0:
+                    if self.board[r-2][c] == '--' and r == 6:
+                        moves.append(Move((r,c), (r-2,c), self.board))
             if c-1 >= 0:
                 if self.board[r-1][c-1][0] == 'b':
                     moves.append(Move((r,c), (r-1,c-1), self.board))
@@ -164,8 +165,9 @@ class GameState():
         else:
             if self.board[r+1][c] == '--':
                 moves.append(Move((r,c), (r+1, c), self.board))
-                if self.board[r+2][c] == '--' and r == 1:
-                    moves.append(Move((r,c), (r+2, c), self.board))
+                if r+2 <= 7:
+                    if self.board[r+2][c] == '--' and r == 1:
+                        moves.append(Move((r,c), (r+2, c), self.board))
             if c-1 >= 0:
                 if self.board[r+1][c-1][0] == 'w':
                     moves.append(Move((r,c), (r+1, c-1), self.board))
