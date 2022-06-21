@@ -35,8 +35,8 @@ class GameState():
         # En Passant
         if move.isEnPassant:
             self.board[move.startRow][move.endCol] = '--'
-        if move.pieceMoved[1] == 'p' and abs(move.endRow - move.startRow) == 2:
-            self.enpassantSquare = ((move.startRow + move.endRow)//2, move.endCol)
+        if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2:
+            self.enpassantSquare = ((move.startRow + move.endRow)//2, move.startCol)
         else:
             self.enpassantSquare = ()
         # Switching turns
@@ -56,14 +56,13 @@ class GameState():
             # En Passant
             if move.isEnPassant:
                 self.board[move.endRow][move.endCol] = '--'
-                self.board[move.startRow][move.endCol] = ('w' if not self.whiteToMove else 'b') + 'p'
+                self.board[move.startRow][move.endCol] = move.pieceCaptured
                 move.enpassantSquare = (move.endRow, move.endCol)
             if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2:
                 move.enpassantSquare = ()
 
 
     def getValidMoves(self):
-        tempEnpassantSquare = self.enpassantSquare
         directions = ((-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1))
         knightDirections = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         moves = self.getPseudolegalMoves()
@@ -114,7 +113,6 @@ class GameState():
                         if color == enemyColor and type == 'N':
                             moves.remove(moves[j])
             self.undoMove()
-        self.enpassantSquare = tempEnpassantSquare
         validMoves = moves
         print('Legal moves: ' + str(len(moves)))
         return validMoves
@@ -264,6 +262,8 @@ class Move():
         self.promotionChoice = 'Q'
         # En passant
         self.isEnPassant = isEnPassant
+        if self.isEnPassant:
+            self.pieceCaptured = 'wp' if self.pieceMoved == 'bp' else 'bp'
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
 
     def __eq__(self, other):
